@@ -87,9 +87,9 @@ class WebsiteChecker:
             message = file.read()
 
         body= message.format(
-            url=str(self.url),
-            status_code=self.current_status_code,
-            interval=int(self.current_interval) // 60
+            url = str(self.url),
+            status_code = self.current_status_code,
+            interval = int(self.current_interval) // 60
         )
 
         msg.attach(MIMEText(body, "plain"))
