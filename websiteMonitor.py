@@ -83,15 +83,15 @@ class WebsiteChecker:
         msg['To'] = ", ".join(os.getenv("RECIPIENT_EMAIL", "").split(","))
         msg['Subject'] = f"{str(self.url)} website status alarm: could not reach website"
         
-        body=f"""The program could not check the status of the website {str(self.url)} and recieved the following status code: {self.current_status_code}.
-        The Website should be checked immediately to ensure that there are no problems with it.
-        Should there be a problem, then a solution for the following HTTP status code is necessary:{self.current_status_code}
-        
-        This program will retry to connect with the website in {int(self.current_interval) // 60} minutes.
-        If the problem persists, then another Email will be sent. A maximum of 4 Emails will be sent.
-        
-        This is an automatically generated Email of the WebsiteMonitor program."""
-        
+        with open("Email_message.txt", "r") as file:
+            message = file.read()
+
+        body= message.format(
+            url=str(self.url),
+            status_code=self.current_status_code,
+            interval=int(self.current_interval) // 60
+        )
+
         msg.attach(MIMEText(body, "plain"))
         
         with smtplib.SMTP(os.getenv('SMTP_SERVER'), 587) as server:
