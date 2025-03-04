@@ -22,7 +22,7 @@ class WebsiteChecker:
         self.current_status_code = 0
 
     def check_status(self):
-        """Check website status with improved error handling."""
+        """Checks website status code and any mentions of errors in the html head of the website."""
         
         if self.is_down:
             time.sleep(min(60 * (2 ** self.consecutive_failures), self.max_interval))
