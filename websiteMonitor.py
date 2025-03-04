@@ -12,11 +12,11 @@ from dotenv import load_dotenv
 
 class WebsiteChecker:
     # creates an object per website and checks itself
-    def __init__(self, url, initial_interval: int = 300):
+    def __init__(self, url, initial_interval: int = 30):
         self.url = url
         self.initial_interval = initial_interval
         self.current_interval = initial_interval
-        self.max_interval = 3600
+        self.max_interval = 240
         self.consecutive_failures = 0
         self.is_down = False
         self.current_status_code = 0
@@ -27,7 +27,7 @@ class WebsiteChecker:
         if self.is_down:
             time.sleep(min(60 * (2 ** self.consecutive_failures), self.max_interval))
         else:
-            time.sleep(randint(300, 600))
+            time.sleep(randint(30, 60))
         
         try:
             if self.check_status_code():
