@@ -2,8 +2,9 @@ import requests
 import time 
 import os
 import json
-from random import randint, uniform
 import smtplib
+import re
+from random import randint, uniform
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ class WebsiteChecker:
         self.is_down = False
         self.current_status_code = 0
 
-    def check_status(self) -> bool:
+    def check_status(self):
         """Check website status with improved error handling."""
         
         if self.is_down:
@@ -29,34 +30,55 @@ class WebsiteChecker:
             time.sleep(randint(300, 600))
         
         try:
-            with requests.Session() as session:
-                session.headers.update({
-                    'User-Agent': 'Website-Monitor/1.0'
-                    }) 
-                response = session.head(
-                    self.url,
-                    timeout=10,
-                    allow_redirects=True
-                )
-                self.current_status_code = response.status_code
-                
-                is_up = 200 <= self.current_status_code < 400
-                if is_up:
+            ## first checks if the website returns a valid status code, then checks if the website has any mentions of 'error' in the html head 
+            if self.check_status_code():
+                if self.html_no_errors():
                     if self.is_down:
                         self.handle_success()
                     else:
                         pass
                 else:
-                    self.handle_failure() 
-                return is_up
-                
+                    self.handle_failure()
+            else:
+                self.handle_failure() 
         except:
             self.handle_failure()
-            return False
+
+
+    def check_status_code(self):
+        """checks whether the website returns a html status code between 200 and 399"""
+        
+        with requests.Session() as session:
+            response = session.head(self.url, timeout=10, allow_redirects=True)
+            self.current_status_code = response.status_code
+            is_up = 200 <= self.current_status_code < 400
+            return is_up
+
+ 
+    def html_no_errors(self):
+        """checks whether the website has any mention of 'error' in its head part of the html.
+        returns True if there are no error mentions, returns False if it finds mentions of errors"""
+        
+        response = requests.get(self.url, stream=True, timeout=10)
+        head_chunks = []
+        for chunk in response.iter_content(chunk_size=512, decode_unicode=True):
+            if chunk:
+                head_chunks.append(chunk)
+                if "</head>" in chunk:
+                    break
+        head_content = "".join(head_chunks)
+
+        error_patterns = [r"error", r"not found", r"site unavailable", r"nicht erreichbar", r"nicht gefunden"]
+        for pattern in error_patterns:
+            if re.search(pattern, head_content, re.IGNORECASE):
+                return False
+            else:
+                return True
 
 
     def handle_success(self):
         """reset monitoring parameters after successful check."""
+        
         self.is_down = False
         self.consecutive_failures = 0
         self.current_interval = self.initial_interval
@@ -64,6 +86,7 @@ class WebsiteChecker:
 
     def handle_failure(self):
         """Adjust monitoring parameters after failed check."""
+       
         self.is_down = True
         self.consecutive_failures += 1
         jitter = uniform(0.8, 1.2)
@@ -117,6 +140,7 @@ class MonitoringSystem:
 
     def validate_email_credentials(self):
         """Validates that all required environment variables are set."""
+       
         required_vars = [
             'SMTP_SERVER',
             'SMTP_USERNAME',
@@ -133,6 +157,7 @@ class MonitoringSystem:
 
     def load_websites(self, websites_file):
         """loads all websites stored in the websites_file.json file"""
+       
         with open(websites_file, "r") as file:
             data = json.load(file)
             return data.get("websites", [])
@@ -140,6 +165,7 @@ class MonitoringSystem:
 
     def run(self):
         """creates an infinite loop that runs the main program"""
+       
         while self.running:
             for _, monitor_instance in self.monitors.items():
                 monitor_instance.check_status()
