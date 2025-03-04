@@ -93,7 +93,7 @@ class WebsiteChecker:
         """Adjust monitoring parameters after failed check."""
        
         self.is_down = True
-        self.current_interval = min(self.initial_interval * (2 ** self.consecutive_failures), self.max_interval)
+        self.current_interval = min(self.initial_interval * (3 ** self.consecutive_failures), self.max_interval)
         if self.current_interval < self.max_interval and self.consecutive_failures < 4:
             self.send_email(email_text)
         self.consecutive_failures += 1
