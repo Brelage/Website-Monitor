@@ -113,7 +113,7 @@ class WebsiteChecker:
         body= message.format(
             url = str(self.url),
             status_code = self.current_status_code,
-            interval = int(min(self.initial_interval * (2 ** self.consecutive_failures), self.max_interval)) // 60
+            interval = int(min(self.initial_interval * (3 ** self.consecutive_failures), self.max_interval)) // 60
         )
 
         msg.attach(MIMEText(body, "plain"))
