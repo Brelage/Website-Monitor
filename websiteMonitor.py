@@ -11,12 +11,11 @@ from dotenv import load_dotenv
 
 
 class WebsiteChecker:
-    # creates an object per website and checks itself
-    def __init__(self, url, initial_interval: int = 300):
+    def __init__(self, url):
         self.url = url
-        self.initial_interval = initial_interval
-        self.current_interval = initial_interval
+        self.initial_interval = 300
         self.max_interval = 3600
+        self.current_interval = self.initial_interval
         self.consecutive_failures = 0
         self.is_down = False
         self.current_status_code = 0
@@ -25,7 +24,7 @@ class WebsiteChecker:
         """Checks website status code and any mentions of errors in the html head of the website."""
         
         if self.is_down:
-            time.sleep(min(60 * (4 ** self.consecutive_failures), self.max_interval))
+            time.sleep(self.current_interval)
         else:
             time.sleep(randint(300, 600))
         
@@ -94,14 +93,10 @@ class WebsiteChecker:
         """Adjust monitoring parameters after failed check."""
        
         self.is_down = True
-        self.consecutive_failures += 1
-        jitter = uniform(0.8, 1.2)
-        self.current_interval = min(
-            self.initial_interval * (4 ** self.consecutive_failures) * jitter,
-            self.max_interval
-        )
-        if self.current_interval < self.max_interval:
+        self.current_interval = min(self.initial_interval * (3 ** self.consecutive_failures), self.max_interval)
+        if self.current_interval < self.max_interval and self.consecutive_failures < 4:
             self.send_email(email_text)
+        self.consecutive_failures += 1
 
 
     def send_email(self, email_text):
@@ -118,7 +113,7 @@ class WebsiteChecker:
         body= message.format(
             url = str(self.url),
             status_code = self.current_status_code,
-            interval = int(self.current_interval) // 60
+            interval = self.current_interval // 60
         )
 
         msg.attach(MIMEText(body, "plain"))
