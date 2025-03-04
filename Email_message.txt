@@ -1,4 +1,4 @@
-The program could not check the status of the website {url} and received the following status code: {status_code}.
+WebsiteMonitor could not check the status of the website {url} and received the following status code: {status_code}.
 
 The Website should be checked immediately to ensure that there are no problems with it.
 Should there be a problem, then a solution for the following HTTP status code is necessary: {status_code}
