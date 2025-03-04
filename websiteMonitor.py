@@ -4,7 +4,7 @@ import os
 import json
 import smtplib
 import re
-from random import randint, uniform
+from random import randint
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
