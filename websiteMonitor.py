@@ -30,7 +30,6 @@ class WebsiteChecker:
             time.sleep(randint(300, 600))
         
         try:
-            ## first checks if the website returns a valid status code, then checks if the website has any mentions of 'error' in the html head 
             if self.check_status_code():
                 if self.html_no_errors():
                     if self.is_down:
@@ -38,42 +37,49 @@ class WebsiteChecker:
                     else:
                         pass
                 else:
-                    self.handle_failure()
+                    self.handle_failure("Email_message_html_error.txt")
             else:
-                self.handle_failure() 
+                self.handle_failure("Email_message_status_code.txt") 
         except:
-            self.handle_failure()
+            raise
 
 
     def check_status_code(self):
         """checks whether the website returns a html status code between 200 and 399"""
         
         with requests.Session() as session:
-            response = session.head(self.url, timeout=10, allow_redirects=True)
-            self.current_status_code = response.status_code
-            is_up = 200 <= self.current_status_code < 400
-            return is_up
+            try:
+                response = session.head(self.url, timeout=10, allow_redirects=True)
+                self.current_status_code = response.status_code
+                is_up = 200 <= self.current_status_code < 400
+                return is_up
+            except:
+                self.handle_failure("Email_message_timeout.txt")
+                return False
 
  
     def html_no_errors(self):
         """checks whether the website has any mention of 'error' in its head part of the html.
-        returns True if there are no error mentions, returns False if it finds mentions of errors"""
+        Returns True if there are no error mentions, returns False if it finds mentions of errors"""
         
-        response = requests.get(self.url, stream=True, timeout=10)
-        head_chunks = []
-        for chunk in response.iter_content(chunk_size=512, decode_unicode=True):
-            if chunk:
-                head_chunks.append(chunk)
-                if "</head>" in chunk:
-                    break
-        head_content = "".join(head_chunks)
+        try:
+            head_chunks = []
+            response = requests.get(self.url, stream=True, timeout=10, allow_redirects=True)
+            for chunk in response.iter_content(chunk_size=512, decode_unicode=True):
+                if chunk:
+                    head_chunks.append(chunk)
+                    if "</head>" in chunk:
+                        break
+            head_content = "".join(head_chunks)
 
-        error_patterns = [r"error", r"not found", r"site unavailable", r"nicht erreichbar", r"nicht gefunden"]
-        for pattern in error_patterns:
-            if re.search(pattern, head_content, re.IGNORECASE):
-                return False
-            else:
-                return True
+            error_patterns = [r"error", r"not found", r"unavailable", r"nicht erreichbar", r"nicht gefunden"]
+            for pattern in error_patterns:
+                if re.search(pattern, head_content, re.IGNORECASE):
+                    return False
+            return True
+        except:
+            self.handle_failure("Email_message_timeout.txt")
+            return True
 
 
     def handle_success(self):
@@ -84,7 +90,7 @@ class WebsiteChecker:
         self.current_interval = self.initial_interval
 
 
-    def handle_failure(self):
+    def handle_failure(self, email_text):
         """Adjust monitoring parameters after failed check."""
        
         self.is_down = True
@@ -95,10 +101,10 @@ class WebsiteChecker:
             self.max_interval
         )
         if self.current_interval < self.max_interval:
-            self.send_email()
+            self.send_email(email_text)
 
 
-    def send_email(self):
+    def send_email(self, email_text):
         """Sends an email notification using environment variables for credentials and instance variables for distinct messages."""
         
         msg = MIMEMultipart()
@@ -106,7 +112,7 @@ class WebsiteChecker:
         msg['To'] = ", ".join(os.getenv("RECIPIENT_EMAIL", "").split(","))
         msg['Subject'] = f"{str(self.url)} website status alarm: could not reach website"
         
-        with open("Email_message.txt", "r") as file:
+        with open(email_text, "r") as file:
             message = file.read()
 
         body= message.format(

@@ -1,0 +1,7 @@
+WebsiteMonitor found a mention of error when checking the website {url}.
+The Website should be checked immediately to ensure that there are no problems with it.
+
+This program will retry to connect with the website in {interval} minutes.
+If the problem persists, then another Email will be sent. A maximum of 4 Emails will be sent.
+
+This is an automatically generated Email of the WebsiteMonitor program.
