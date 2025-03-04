@@ -24,7 +24,7 @@ class WebsiteChecker:
         """Checks website status code and any mentions of errors in the html head of the website."""
         
         if self.is_down:
-            time.sleep(min(self.initial_interval * (3 ** self.consecutive_failures), self.max_interval))
+            time.sleep(self.current_interval)
         else:
             time.sleep(randint(300, 600))
         
@@ -113,7 +113,7 @@ class WebsiteChecker:
         body= message.format(
             url = str(self.url),
             status_code = self.current_status_code,
-            interval = int(min(self.initial_interval * (3 ** self.consecutive_failures), self.max_interval)) // 60
+            interval = self.current_interval // 60
         )
 
         msg.attach(MIMEText(body, "plain"))
