@@ -25,7 +25,7 @@ class WebsiteChecker:
         """Checks website status code and any mentions of errors in the html head of the website."""
         
         if self.is_down:
-            time.sleep(min(60 * (2 ** self.consecutive_failures), self.max_interval))
+            time.sleep(min(60 * (4 ** self.consecutive_failures), self.max_interval))
         else:
             time.sleep(randint(300, 600))
         
@@ -97,7 +97,7 @@ class WebsiteChecker:
         self.consecutive_failures += 1
         jitter = uniform(0.8, 1.2)
         self.current_interval = min(
-            self.initial_interval * (2 ** self.consecutive_failures) * jitter,
+            self.initial_interval * (4 ** self.consecutive_failures) * jitter,
             self.max_interval
         )
         if self.current_interval < self.max_interval:
