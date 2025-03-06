@@ -12,7 +12,7 @@ git clone https://github.com/Brelage/Website-Monitor
 ```
 2. navigate into the project: 
 ```bash
-cd WebsiteMonitor
+cd "Website-Monitor"
 ```
 3. run the setup script: 
 ```bash 
@@ -26,7 +26,7 @@ source .venv/bin/activate
 6. input the email credentials into the .env file
 7. run the application: 
 ```bash 
-python websiteMonitor
+python websiteMonitor.py
 ```
 
 In order for the program to be able to run properly, you need to add at least one URL into the dictionary in the website_list.json file. This program supports monitoring of multiple websites, just add them to the dictionary separated by commas.
