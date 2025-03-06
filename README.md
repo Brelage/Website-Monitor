@@ -19,7 +19,8 @@ cd WebsiteMonitor
 source setup.sh
 ```
 4. activate the virtual environment: 
-```bash source .venv/bin/activate
+```bash 
+source .venv/bin/activate
 ```
 5. input the websites into the website_list.json file
 6. input the email credentials into the .env file
