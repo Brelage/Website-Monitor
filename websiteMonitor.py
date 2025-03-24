@@ -5,6 +5,7 @@ import json
 import smtplib
 import re
 from random import randint
+from fake_useragent import UserAgent
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
@@ -22,6 +23,17 @@ class WebsiteChecker:
 
     def check_status(self):
         """Checks website status code and any mentions of errors in the html head of the website."""
+        
+        self.session = requests.Session()
+        ua = UserAgent()
+        self.headers = {
+        "User-Agent": ua.random,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Connection": "keep-alive",
+        "Cache-Control": "max-age=0"
+        }
+
         
         if self.is_down:
             time.sleep(self.current_interval)
@@ -46,9 +58,9 @@ class WebsiteChecker:
     def check_status_code(self):
         """checks whether the website returns a html status code between 200 and 399"""
         
-        with requests.Session() as session:
+        with session as session:
             try:
-                response = session.head(self.url, timeout=10, allow_redirects=True)
+                response = session.head(self.url, timeout=10, allow_redirects=True, headers=self.headers)
                 self.current_status_code = response.status_code
                 is_up = 200 <= self.current_status_code < 400
                 return is_up
@@ -63,7 +75,7 @@ class WebsiteChecker:
         
         try:
             head_chunks = []
-            response = requests.get(self.url, stream=True, timeout=10, allow_redirects=True)
+            response = self.session.get(self.url, stream=True, timeout=10, allow_redirects=True, headers=self.headers)
             for chunk in response.iter_content(chunk_size=512, decode_unicode=True):
                 if chunk:
                     head_chunks.append(chunk)
