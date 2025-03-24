@@ -36,9 +36,9 @@ class WebsiteChecker:
                     else:
                         pass
                 else:
-                    self.handle_failure("Email_message_html_error.txt")
+                    self.handle_failure("Email_message_html_error.html")
             else:
-                self.handle_failure("Email_message_status_code.txt") 
+                self.handle_failure("Email_message_status_code.hmtl") 
         except:
             raise
 
@@ -53,7 +53,7 @@ class WebsiteChecker:
                 is_up = 200 <= self.current_status_code < 400
                 return is_up
             except:
-                self.handle_failure("Email_message_timeout.txt")
+                self.handle_failure("Email_message_timeout.html")
                 return False
 
  
@@ -77,7 +77,7 @@ class WebsiteChecker:
                     return False
             return True
         except:
-            self.handle_failure("Email_message_timeout.txt")
+            self.handle_failure("Email_message_timeout.html")
             return True
 
 
@@ -105,9 +105,9 @@ class WebsiteChecker:
         msg = MIMEMultipart()
         msg['From'] = os.getenv('SENDER_EMAIL')
         msg['To'] = ", ".join(os.getenv("RECIPIENT_EMAIL", "").split(","))
-        msg['Subject'] = f"{str(self.url)} website status alarm: could not reach website"
+        msg['Subject'] = f"{str(self.url)} Website Status alarm: website not available"
         
-        with open(email_text, "r") as file:
+        with open(email_text, "r", encoding="utf-8") as file:
             message = file.read()
 
         body= message.format(
@@ -116,7 +116,7 @@ class WebsiteChecker:
             interval = self.current_interval // 60
         )
 
-        msg.attach(MIMEText(body, "plain"))
+        msg.attach(MIMEText(body, "html", "utf-8"))
         
         with smtplib.SMTP(os.getenv('SMTP_SERVER'), 587) as server:
             server.starttls()
