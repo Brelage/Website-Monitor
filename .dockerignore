@@ -1,0 +1,6 @@
+.gitignore
+.venv
+logs/
+setup-container.ps1
+.git
+.env
